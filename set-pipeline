@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -euo pipefail
+IFS=$'\n\t'
+
+SCRIPT_PATH=$(realpath $(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd))
+
+fly \
+  set-pipeline \
+  --target "$CONCOURSE_TARGET" \
+  --pipeline=tasmota-builder \
+  --yaml-var=secrets="$SECRETS" \
+  --var ci-branch="$GIT_BRANCH" \
+  --config "$SCRIPT_PATH"/pipeline.yml

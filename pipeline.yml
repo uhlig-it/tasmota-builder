@@ -1,0 +1,110 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/spion/concourse-jsonschema-generator/main/schema.json
+jobs:
+  - name: publish-registry-image
+    plan:
+      - get: platformio-release
+        trigger: true
+        params: { include_source_tarball: false }
+      - load_var: platformio-version
+        file: platformio-release/version
+      - in_parallel:
+        - get: lib
+          trigger: false
+        - get: oci-task-image
+        - get: image-source
+          trigger: true
+      - task: build-image
+        privileged: true
+        file: lib/tasks/oci/build-image.yml
+        image: oci-task-image
+        input_mapping: { source: image-source }
+        params:
+          CONTEXT: source
+          BUILD_ARG_PLATFORM_IO_VERSION: ((.:platformio-version))
+        output_mapping: { image: image }
+      - load_var: image-source-version
+        file: image-source/.git/describe_ref # populated by the git-resource
+      - put: tasmota-builder-image
+        params:
+          image: image/image.tar
+          # version: ((.:image-source-version))
+          # bump_aliases: true
+  - name: build-release
+    plan:
+      - in_parallel:
+        - get: tasmota-release
+          trigger: true
+          params: { include_source_tarball: true }
+        - get: lib
+      - task: untar-tasmota-source
+        file: lib/tasks/untar.yml
+        input_mapping: { release: tasmota-release }
+        output_mapping: { extracted: tasmota-source }
+        params: { tarball: source.tar.gz }
+      - get: tasmota-builder-image
+        trigger: true
+      - task: build
+        image: tasmota-builder-image
+        config:
+          platform: linux
+          inputs: [ name: tasmota-source ]
+          params:
+            PLATFORMIO_CORE_DIR: pio-core
+            PLATFORMIO_BUILD_FLAGS: -DUSE_DISCOVERY -DMQTT_HOST_DISCOVERY
+          caches: [ path: pio-core ]
+          outputs: [ name: firmware ]
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                PLATFORMIO_CORE_DIR=$(readlink -f "$PLATFORMIO_CORE_DIR")
+                echo Now we have "$(pio --version)" with cache of size "$(du -hs $PLATFORMIO_CORE_DIR)"
+                pio run --environment tasmota --project-dir tasmota-source/arendst-Tasmota-*/
+                cp tasmota-source/arendst-Tasmota-*/.pio/build/tasmota/firmware.bin firmware
+                ls -al firmware
+      # TODO put firmware into a publically accessible S3 bucket
+resources:
+  - name: lib
+    type: git
+    icon: file-tree
+    source: &github
+      uri: git@github.com:suhlig/concourse-task-library.git
+      private_key: ((secrets.github.ssh_key))
+  - name: image-source
+    type: git
+    icon: github
+    source:
+      <<: *github
+      uri: git@github.com:uhlig-it/tasmota-builder.git
+  - name: platformio-release
+    type: github-release
+    icon: package
+    source: &github-release
+      owner: platformio
+      repository: platformio-core
+      access_token: ((secrets.github.access_token))
+      pre_release: true
+  - name: tasmota-release
+    type: github-release
+    icon: package
+    source:
+      <<: *github-release
+      owner: arendst
+      repository: Tasmota
+  - name: tasmota-builder-image
+    type: registry-image
+    icon: docker
+    source: &dockerhub
+      repository: uhligit/tasmota-builder
+      username: ((secrets.dockerhub.username))
+      password: ((secrets.dockerhub.authtoken))
+      pre_releases: true
+      debug: true
+      tag: latest
+  - name: oci-task-image
+    type: registry-image
+    icon: docker
+    source:
+      <<: *dockerhub
+      repository: concourse/oci-build-task
