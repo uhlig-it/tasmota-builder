@@ -59,11 +59,12 @@ jobs:
               - -c
               - |
                 PLATFORMIO_CORE_DIR=$(readlink -f "$PLATFORMIO_CORE_DIR")
-                echo Now we have "$(pio --version)" with cache of size "$(du -hs $PLATFORMIO_CORE_DIR)"
+                echo Now we have "$(pio --version)" with core_dir of size "$(du -hs $PLATFORMIO_CORE_DIR)"
                 pio run --environment tasmota --project-dir tasmota-source/arendst-Tasmota-*/
                 cp tasmota-source/arendst-Tasmota-*/.pio/build/tasmota/firmware.bin firmware
                 ls -al firmware
       # TODO put firmware into a publically accessible S3 bucket
+      # TODO Send a notification once we build on new Tasmota releases only
 resources:
   - name: lib
     type: git
