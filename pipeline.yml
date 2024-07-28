@@ -1,4 +1,3 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/spion/concourse-jsonschema-generator/main/schema.json
 jobs:
   - name: publish-registry-image
     plan:
@@ -27,8 +26,8 @@ jobs:
       - put: tasmota-builder-image
         params:
           image: image/image.tar
-          # version: ((.:image-source-version))
-          # bump_aliases: true
+          version: ((.:image-source-version))
+          bump_aliases: true
   - name: build-release
     plan:
       - in_parallel:
@@ -43,27 +42,57 @@ jobs:
         params: { tarball: source.tar.gz }
       - get: tasmota-builder-image
         trigger: true
-      - task: build
-        image: tasmota-builder-image
-        config:
-          platform: linux
-          inputs: [ name: tasmota-source ]
-          params:
-            PLATFORMIO_CORE_DIR: pio-core
-            PLATFORMIO_BUILD_FLAGS: -DUSE_DISCOVERY -DMQTT_HOST_DISCOVERY
-          caches: [ path: pio-core ]
-          outputs: [ name: firmware ]
-          run:
-            path: sh
-            args:
-              - -c
-              - |
-                PLATFORMIO_CORE_DIR=$(readlink -f "$PLATFORMIO_CORE_DIR")
-                echo Now we have "$(pio --version)" with core_dir of size "$(du -hs $PLATFORMIO_CORE_DIR)"
-                pio run --environment tasmota --project-dir tasmota-source/arendst-Tasmota-*/
-                cp tasmota-source/arendst-Tasmota-*/.pio/build/tasmota/firmware.bin firmware
-                ls -al firmware
-      # TODO put firmware into a publically accessible S3 bucket
+      - in_parallel:
+        - do:
+          - task: build-minimal
+            image: tasmota-builder-image
+            config:
+              platform: linux
+              inputs: [ name: tasmota-source ]
+              params:
+                PLATFORMIO_CORE_DIR: pio-core
+                PLATFORMIO_BUILD_FLAGS: -DFIRMWARE_MINIMAL
+              caches: [ path: pio-core ]
+              outputs: [ name: firmware-minimal ]
+              run:
+                path: sh
+                args:
+                  - -c
+                  - |
+                    PLATFORMIO_CORE_DIR=$(readlink -f "$PLATFORMIO_CORE_DIR")
+                    echo Now we have "$(pio --version)" with core_dir of size "$(du -hs $PLATFORMIO_CORE_DIR)"
+                    pio run --environment tasmota --project-dir tasmota-source/arendst-Tasmota-*/
+                    cp tasmota-source/arendst-Tasmota-*/.pio/build/tasmota/firmware.bin firmware-minimal
+                    gzip -9 firmware-minimal/firmware.bin
+          - put: firmware-minimal
+            params:
+              file: firmware-minimal/firmware.bin.gz
+              acl: public-read # https://stackoverflow.com/a/74522101/1044029 and https://github.com/concourse/s3-resource?tab=readme-ov-file#plan
+        - do:
+          - task: build
+            image: tasmota-builder-image
+            config:
+              platform: linux
+              inputs: [ name: tasmota-source ]
+              params:
+                PLATFORMIO_CORE_DIR: pio-core
+                PLATFORMIO_BUILD_FLAGS: -DUSE_PROMETHEUS
+              caches: [ path: pio-core ]
+              outputs: [ name: firmware ]
+              run:
+                path: sh
+                args:
+                  - -c
+                  - |
+                    PLATFORMIO_CORE_DIR=$(readlink -f "$PLATFORMIO_CORE_DIR")
+                    echo Now we have "$(pio --version)" with core_dir of size "$(du -hs $PLATFORMIO_CORE_DIR)"
+                    pio run --environment tasmota --project-dir tasmota-source/arendst-Tasmota-*/
+                    cp tasmota-source/arendst-Tasmota-*/.pio/build/tasmota/firmware.bin firmware
+                    gzip -9 firmware/firmware.bin
+          - put: firmware
+            params:
+              file: firmware/firmware.bin.gz
+              acl: public-read # https://stackoverflow.com/a/74522101/1044029 and https://github.com/concourse/s3-resource?tab=readme-ov-file#plan
       # TODO Send a notification once we build on new Tasmota releases only
 resources:
   - name: lib
@@ -109,3 +138,16 @@ resources:
     source:
       <<: *dockerhub
       repository: concourse/oci-build-task
+  - name: firmware
+    type: s3
+    source: &s3
+      bucket: uhlig-it-tasmota-builds
+      versioned_file: tasmota.bin.gz
+      access_key_id: ((secrets.b2.keyID))
+      secret_access_key: ((secrets.b2.applicationKey))
+      endpoint: s3.us-west-001.backblazeb2.com
+  - name: firmware-minimal
+    type: s3
+    source:
+      <<: *s3
+      versioned_file: tasmota-minimal.bin.gz
