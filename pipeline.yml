@@ -41,7 +41,6 @@ jobs:
         output_mapping: { extracted: tasmota-source }
         params: { tarball: source.tar.gz }
       - get: tasmota-builder-image
-        trigger: true
       - in_parallel:
         - do:
           - task: build-minimal
@@ -69,7 +68,7 @@ jobs:
               file: firmware-minimal/firmware.bin.gz
               acl: public-read # https://stackoverflow.com/a/74522101/1044029 and https://github.com/concourse/s3-resource?tab=readme-ov-file#plan
         - do:
-          - task: build
+          - task: build-prometheus
             image: tasmota-builder-image
             config:
               platform: linux
@@ -93,7 +92,35 @@ jobs:
             params:
               file: firmware/firmware.bin.gz
               acl: public-read # https://stackoverflow.com/a/74522101/1044029 and https://github.com/concourse/s3-resource?tab=readme-ov-file#plan
-      # TODO Send a notification once we build on new Tasmota releases only
+      - put: gh-release
+        params:
+          name: tasmota-release/version
+          # body: release-notes/commits-since-last-tag.txt
+          tag: tasmota-release/tag
+          globs:
+            - firmware-minimal/tasmota-minimal.bin.gz
+            - firmware/tasmota.bin.gz
+      - get: jo
+      - task: prepare-notification
+        image: jo
+        config:
+          platform: linux
+          inputs: [ name: gh-release ]
+          outputs: [ name: release-notification ]
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                jo \
+                  topic=suhlig \
+                  title="Tasmota Builder" \
+                  message="The new Tasmota firmware build $(cat gh-release/tag) is available." \
+                  "actions[]=$(jo action=view label=Pipeline url='$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME')" \
+                  "actions[]=$(jo action=view label=Release url=$(cat gh-release/url))" \
+                | tee release-notification/message.json
+      - put: ntfy
+        params: { file: release-notification/message.json }
 resources:
   - name: lib
     type: git
@@ -114,7 +141,7 @@ resources:
       owner: platformio
       repository: platformio-core
       access_token: ((secrets.github.access_token))
-      pre_release: true
+      pre_release: false
   - name: tasmota-release
     type: github-release
     icon: package
@@ -122,6 +149,7 @@ resources:
       <<: *github-release
       owner: arendst
       repository: Tasmota
+      pre_releases: false
   - name: tasmota-builder-image
     type: registry-image
     icon: docker
@@ -129,8 +157,8 @@ resources:
       repository: uhligit/tasmota-builder
       username: ((secrets.dockerhub.username))
       password: ((secrets.dockerhub.authtoken))
-      pre_releases: true
-      debug: true
+      pre_releases: false
+      debug: false
       tag: latest
   - name: oci-task-image
     type: registry-image
@@ -138,6 +166,12 @@ resources:
     source:
       <<: *dockerhub
       repository: concourse/oci-build-task
+  - name: jo
+    type: registry-image
+    icon: docker
+    source:
+      <<: *dockerhub
+      repository: jpmens/jo
   - name: firmware
     type: s3
     source: &s3
@@ -151,3 +185,22 @@ resources:
     source:
       <<: *s3
       versioned_file: tasmota-minimal.bin.gz
+  - name: gh-release
+    type: github-release
+    icon: github-circle
+    source:
+      <<: *github-release
+      owner: uhlig-it
+      repository: tasmota-builder # concourse-uhlig-it must have write access
+      pre_release: false
+      drafts: false
+  - name: ntfy
+    type: http-resource
+    source:
+      url: https://ntfy.sh
+      build_metadata: [ body ]
+      out_only: true
+resource_types:
+  - name: http-resource
+    type: docker-image
+    source: { repository: jgriff/http-resource }
