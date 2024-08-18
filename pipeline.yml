@@ -154,7 +154,7 @@ jobs:
           inputs: [ name: tasmota-builder-release ]
           outputs: [ name: release-notification ]
           run:
-            path: zsh
+            path: sh
             args:
               - -c
               - |
