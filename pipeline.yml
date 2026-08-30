@@ -243,7 +243,9 @@ jobs:
                 echo Now we have "$(pio --version)" with core_dir of size "$(du -hs $PLATFORMIO_CORE_DIR)"
 
                 # Customize the build: the file lists all features and sensors as we'd like them to be set e.g. USE_PROMETHEUS.
-                cp tasmota-customization/user_config_override.h tasmota-source/tasmota/user_config_override.h
+                # Must land in the src dir (tasmota-source/tasmota/tasmota/): the pio-tools/override_copy.py pre-script
+                # checks exactly that location and silently substitutes user_config_override_sample.h if no file is there.
+                cp tasmota-customization/user_config_override.h tasmota-source/tasmota/tasmota/user_config_override.h
 
                 pio run --environment tasmota32 --project-dir tasmota-source/tasmota
 

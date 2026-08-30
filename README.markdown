@@ -11,7 +11,7 @@ CI pipeline to build custom Tasmota images
 
 # Customization (`user_config_override.h`)
 
-The firmware for the Nous A8T is customized with a `user_config_override.h` in the repository root. It is not part of the builder image; the `build-tasmota32-nousa8t` job fetches it from the repository and copies it into the extracted Tasmota source tree right before running the build, so a push to `user_config_override.h` alone triggers a new firmware build. The file lists all features and sensors from the [BUILDS documentation](https://tasmota.github.io/docs/BUILDS) and enables only those that are also enabled by default in the ESP8266 build (the first entry of the `t` column), plus `USE_PROMETHEUS` for metrics. Everything that is enabled by default only in the ESP32 build is disabled, which roughly halves the flash usage of the stock `tasmota32.bin`.
+The firmware for the Nous A8T is customized with a `user_config_override.h` in the repository root. It is not part of the builder image; the `build-tasmota32-nousa8t` job fetches it from the repository and copies it into `tasmota-source/tasmota/tasmota/user_config_override.h` (the Tasmota `src_dir`, where `my_user_config.h` expects it) right before running the build, so a push to `user_config_override.h` alone triggers a new firmware build. The file lists all features and sensors from the [BUILDS documentation](https://tasmota.github.io/docs/BUILDS) and enables only those that are also enabled by default in the ESP8266 build (the first entry of the `t` column), plus `USE_PROMETHEUS` for metrics. Everything that is enabled by default only in the ESP32 build is disabled, which roughly halves the flash usage of the stock `tasmota32.bin`.
 
 # Uploading
 
