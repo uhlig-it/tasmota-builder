@@ -245,11 +245,13 @@ jobs:
 
                 pio run --environment tasmota32 --project-dir tasmota-source/tasmota
 
-                cp tasmota-source/tasmota/.pio/build/tasmota32/firmware.bin firmware-nousa8t
-                gzip -9 firmware-nousa8t/firmware.bin
+                # Publish the raw image only: unlike the ESP8266, the ESP32 firmware
+                # upload does not support gzipped images, so the .gz cannot be
+                # uploaded to the device (fails with "Not enough space").
+                cp tasmota-source/tasmota/.pio/build/tasmota32/firmware.bin firmware-nousa8t/tasmota32-nousa8t.bin
       - put: firmware-nousa8t
         params:
-          file: firmware-nousa8t/firmware.bin.gz
+          file: firmware-nousa8t/tasmota32-nousa8t.bin
           acl: public-read # https://stackoverflow.com/a/74522101/1044029 and https://github.com/concourse/s3-resource?tab=readme-ov-file#plan
       - get: jo-image
       - task: prepare-notification
@@ -350,7 +352,7 @@ resources:
     type: s3
     source:
       <<: *s3
-      versioned_file: tasmota32-nousa8t.bin.gz
+      versioned_file: tasmota32-nousa8t.bin
   - name: tasmota-builder-release
     type: github-release
     icon: github-circle

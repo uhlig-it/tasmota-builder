@@ -48,7 +48,7 @@
 // would silently replace this custom build. Upload new builds manually or set
 // `OtaUrl` at runtime (note: HTTPS OTA requires re-enabling USE_MQTT_TLS).
 #undef OTA_URL
-#define OTA_URL "http://192.168.10.164:3333/tasmota32-nousa8t.bin.gz"
+#define OTA_URL "http://192.168.10.164:3333/tasmota32-nousa8t.bin"
 
 /*********************************************************************************************\
  * All features and sensors from the BUILDS documentation
