@@ -83,7 +83,7 @@
 // USE_DOMOTICZ            [-, x / x, x, x, x, -]  -> keep (ESP8266 default)
 //   Integration with the Domoticz home automation system
 #ifndef USE_DOMOTICZ
-#define USE_DOMOTICZ
+#undef USE_DOMOTICZ
 #endif
 
 // USE_HOME_ASSISTANT      [-, - / -, -, -, -, -]  -> disable
@@ -165,13 +165,13 @@
 // USE_EMULATION_HUE       [x, x / x, -, x, -, -]  -> keep (ESP8266 default)
 //   Hue Bridge emulation for Alexa
 #ifndef USE_EMULATION_HUE
-#define USE_EMULATION_HUE
+#undef USE_EMULATION_HUE
 #endif
 
 // USE_EMULATION_WEMO      [x, x / x, -, x, -, -]  -> keep (ESP8266 default)
 //   Belkin WeMo emulation for Alexa
 #ifndef USE_EMULATION_WEMO
-#define USE_EMULATION_WEMO
+#undef USE_EMULATION_WEMO
 #endif
 
 // USE_DISCOVERY           [-, - / -, -, -, -, -]  -> not enabled by default and
@@ -281,61 +281,61 @@
 // USE_SONOFF_RF           [-, x / -, x, x, -, -]  -> keep (ESP8266 default)
 //   Sonoff RF Bridge (433 MHz RF transmitter/receiver)
 #ifndef USE_SONOFF_RF
-#define USE_SONOFF_RF
+#undef USE_SONOFF_RF
 #endif
 
 // USE_RF_FLASH            [-, x / -, x, x, -, -]  -> keep (ESP8266 default)
 //   Flash the EFM8BB1 MCU of the Sonoff RF Bridge (C2CK=GPIO4, C2D=GPIO5)
 #ifndef USE_RF_FLASH
-#define USE_RF_FLASH
+#undef USE_RF_FLASH
 #endif
 
 // USE_SONOFF_SC           [-, x / -, x, x, -, -]  -> keep (ESP8266 default)
 //   Sonoff SC environment sensor (temp/humidity/light/noise/air quality) over serial
 #ifndef USE_SONOFF_SC
-#define USE_SONOFF_SC
+#undef USE_SONOFF_SC
 #endif
 
 // USE_TUYA_MCU            [x, x / -, x, x, -, x]  -> keep (ESP8266 default)
 //   Tuya Serial MCU
 #ifndef USE_TUYA_MCU
-#define USE_TUYA_MCU
+#undef USE_TUYA_MCU
 #endif
 
 // USE_ARMTRONIX_DIMMERS   [-, x / -, x, -, -, -]  -> keep (ESP8266 default)
 //   Armtronix Dimmers
 #ifndef USE_ARMTRONIX_DIMMERS
-#define USE_ARMTRONIX_DIMMERS
+#undef USE_ARMTRONIX_DIMMERS
 #endif
 
 // USE_PS_16_DZ            [-, x / -, x, -, -, -]  -> keep (ESP8266 default)
 //   PS-16-DZ Dimmer
 #ifndef USE_PS_16_DZ
-#define USE_PS_16_DZ
+#undef USE_PS_16_DZ
 #endif
 
 // USE_SONOFF_IFAN         [-, x / -, x, -, -, -]  -> keep (ESP8266 default)
 //   Sonoff iFan02 and iFan03
 #ifndef USE_SONOFF_IFAN
-#define USE_SONOFF_IFAN
+#undef USE_SONOFF_IFAN
 #endif
 
 // USE_BUZZER              [-, x / x, x, x, -, -]  -> keep (ESP8266 default)
 //   A buzzer
 #ifndef USE_BUZZER
-#define USE_BUZZER
+#undef USE_BUZZER
 #endif
 
 // USE_ARILUX_RF           [-, x / -, x, -, -, -]  -> keep (ESP8266 default)
 //   Arilux RF remote controller
 #ifndef USE_ARILUX_RF
-#define USE_ARILUX_RF
+#undef USE_ARILUX_RF
 #endif
 
 // USE_SHUTTER             [-, x / x, x, -, -, -]  -> keep (ESP8266 default)
 //   Shutters: up to 4, various motor types
 #ifndef USE_SHUTTER
-#define USE_SHUTTER
+#undef USE_SHUTTER
 #endif
 
 // USE_DEEPSLEEP           [-, x / x, -, x, -, -]  -> keep (ESP8266 default)
@@ -347,7 +347,7 @@
 // USE_EXS_DIMMER          [-, x / -, x, -, -, -]  -> keep (ESP8266 default)
 //   ES-Store Wi-Fi Dimmer
 #ifndef USE_EXS_DIMMER
-#define USE_EXS_DIMMER
+#undef USE_EXS_DIMMER
 #endif
 
 // USE_DEVICE_GROUPS       [-, x / x, -, -, -, -]  -> keep (ESP8266 default)
@@ -359,7 +359,7 @@
 // USE_PWM_DIMMER          [-, x / -, x, -, -, -]  -> keep (ESP8266 default)
 //   MJ-SD01/acenx/NTONPOWER PWM dimmers
 #ifndef USE_PWM_DIMMER
-#define USE_PWM_DIMMER
+#undef USE_PWM_DIMMER
 #endif
 
 // USE_KEELOQ              [-, - / -, -, -, -, -]  -> disable
@@ -371,19 +371,19 @@
 // USE_SONOFF_D1           [-, x / -, x, -, -, -]  -> keep (ESP8266 default)
 //   Sonoff D1 Dimmer
 #ifndef USE_SONOFF_D1
-#define USE_SONOFF_D1
+#undef USE_SONOFF_D1
 #endif
 
 // USE_SHELLY_DIMMER       [-, x / -, -, -, -, -]  -> keep (ESP8266 default)
 //   Shelly Dimmer
 #ifndef USE_SHELLY_DIMMER
-#define USE_SHELLY_DIMMER
+#undef USE_SHELLY_DIMMER
 #endif
 
 // USE_AC_ZERO_CROSS_DIMMER [-, x / x, x, x, x, x] -> keep (ESP8266 default)
 //   AC zero-cross detection for triac dimmers (needs USE_COUNTER and USE_LIGHT)
 #ifndef USE_AC_ZERO_CROSS_DIMMER
-#define USE_AC_ZERO_CROSS_DIMMER
+#undef USE_AC_ZERO_CROSS_DIMMER
 #endif
 
 // -- Light modules --------------------------------
@@ -414,49 +414,49 @@
 // USE_MY92X1              [-, x / -, x, x, -, x]  -> keep (ESP8266 default)
 //   MY92X1 RGBCW led controller as used in Sonoff B1, Ailight and Lohas
 #ifndef USE_MY92X1
-#define USE_MY92X1
+#undef USE_MY92X1
 #endif
 
 // USE_SM16716             [-, x / -, x, x, -, x]  -> keep (ESP8266 default)
 //   SM16716 RGB LED controller
 #ifndef USE_SM16716
-#define USE_SM16716
+#undef USE_SM16716
 #endif
 
 // USE_SM2135              [-, x / -, x, x, -, x]  -> keep (ESP8266 default)
 //   SM2135 RGBCW led control as used in Action LSC
 #ifndef USE_SM2135
-#define USE_SM2135
+#undef USE_SM2135
 #endif
 
 // USE_SM2335              [-, x / -, x, x, -, x]  -> keep (ESP8266 default)
 //   SM2335 RGBCW led control as used in SwitchBot Color Bulb
 #ifndef USE_SM2335
-#define USE_SM2335
+#undef USE_SM2335
 #endif
 
 // USE_BP5758D             [-, x / -, x, x, -, x]  -> keep (ESP8266 default)
 //   BP5758D RGBCW led control as used in some Tuya lightbulbs
 #ifndef USE_BP5758D
-#define USE_BP5758D
+#undef USE_BP5758D
 #endif
 
 // USE_BP1658CJ            [-, x / -, x, x, -, x]  -> keep (ESP8266 default)
 //   BP1658CJ RGBCW led control as used in Orein OS0100411267 Bulb
 #ifndef USE_BP1658CJ
-#define USE_BP1658CJ
+#undef USE_BP1658CJ
 #endif
 
 // USE_SONOFF_L1           [-, x / -, x, x, -, x]  -> keep (ESP8266 default)
 //   Sonoff L1 led control
 #ifndef USE_SONOFF_L1
-#define USE_SONOFF_L1
+#undef USE_SONOFF_L1
 #endif
 
 // USE_ELECTRIQ_MOODL      [-, x / -, x, x, -, x]  -> keep (ESP8266 default)
 //   ElectriQ iQ-wifiMOODL RGBW LED controller
 #ifndef USE_ELECTRIQ_MOODL
-#define USE_ELECTRIQ_MOODL
+#undef USE_ELECTRIQ_MOODL
 #endif
 
 // -- Energy monitors ------------------------------
@@ -478,25 +478,25 @@
 // USE_PZEM004T            [-, x / x, x, x, -, -]  -> keep (ESP8266 default)
 //   PZEM004T Energy monitor
 #ifndef USE_PZEM004T
-#define USE_PZEM004T
+#undef USE_PZEM004T
 #endif
 
 // USE_PZEM_AC             [-, x / x, x, x, -, -]  -> keep (ESP8266 default)
 //   PZEM-014/PZEM-016 AC energy monitor (serial)
 #ifndef USE_PZEM_AC
-#define USE_PZEM_AC
+#undef USE_PZEM_AC
 #endif
 
 // USE_PZEM_DC             [-, x / x, x, x, -, -]  -> keep (ESP8266 default)
 //   PZEM-003/PZEM-017 DC energy monitor (serial)
 #ifndef USE_PZEM_DC
-#define USE_PZEM_DC
+#undef USE_PZEM_DC
 #endif
 
 // USE_MCP39F501           [-, x / -, x, x, -, -]  -> keep (ESP8266 default)
 //   MCP39F501 Energy monitor as used in Shelly 2
 #ifndef USE_MCP39F501
-#define USE_MCP39F501
+#undef USE_MCP39F501
 #endif
 
 // USE_SDM72               [-, - / x, -, x, -, -]  -> disable (ESP32 default)
@@ -550,7 +550,7 @@
 // USE_BL09XX              [-, x / x, x, x, -, -]  -> keep (ESP8266 default)
 //   Various BL09XX Energy monitor as used in Blitzwolf SHP-10 or Sonoff Dual R3 v2
 #ifndef USE_BL09XX
-#define USE_BL09XX
+#undef USE_BL09XX
 #endif
 
 // USE_TELEINFO            [-, - / -, -, -, -, -]  -> disable
@@ -594,13 +594,13 @@
 // USE_DS18x20             [-, x / x, x, x, -, x]  -> keep (ESP8266 default)
 //   DS18x20 1-Wire temperature sensors
 #ifndef USE_DS18x20
-#define USE_DS18x20
+#undef USE_DS18x20
 #endif
 
 // USE_DHT                 [-, x / x, x, x, -, x]  -> keep (ESP8266 default)
 //   DHT11/DHT21/DHT22/AM2301/AM2302/AM2321 and SI7021 temperature & humidity
 #ifndef USE_DHT
-#define USE_DHT
+#undef USE_DHT
 #endif
 
 // USE_MAX31855            [-, - / x, -, x, -, -]  -> disable (ESP32 default)
@@ -632,7 +632,7 @@
 // USE_I2C                 [-, x / x, x, x, -, x]  -> keep (ESP8266 default)
 //   I2C bus (Wire library) for I2C sensors
 #ifndef USE_I2C
-#define USE_I2C
+#undef USE_I2C
 #endif
 
 // USE_RTC_CHIPS           [-, - / x, -, -, -, -]  -> disable (ESP32 default)
@@ -926,7 +926,7 @@
 // USE_ADE7953             [-, x / x, x, x, -, x]  -> keep (ESP8266 default)
 //   ADE7953 Energy monitor as used on Shelly 2.5 (I2C address 0x38)
 #ifndef USE_ADE7953
-#define USE_ADE7953
+#undef USE_ADE7953
 #endif
 
 // USE_VL53L0X             [-, - / x, -, x, -, -]  -> disable (ESP32 default)
@@ -1276,7 +1276,7 @@
 // USE_SERIAL_BRIDGE       [-, x / x, x, x, -, x]  -> keep (ESP8266 default)
 //   Software Serial Bridge
 #ifndef USE_SERIAL_BRIDGE
-#define USE_SERIAL_BRIDGE
+#undef USE_SERIAL_BRIDGE
 #endif
 
 // USE_MODBUS_BRIDGE       [-, - / x, -, -, -, -]  -> disable (ESP32 default)
@@ -1454,13 +1454,13 @@
 // USE_IR_REMOTE           [-, x / -, x, x, x, x]  -> keep (ESP8266 default)
 //   Send IR remote commands
 #ifndef USE_IR_REMOTE
-#define USE_IR_REMOTE
+#undef USE_IR_REMOTE
 #endif
 
 // USE_IR_RECEIVE          [-, x / -, x, x, x, x]  -> keep (ESP8266 default)
 //   IR receiver
 #ifndef USE_IR_RECEIVE
-#define USE_IR_RECEIVE
+#undef USE_IR_RECEIVE
 #endif
 
 // USE_IR_REMOTE_FULL      [-, - / -, -, -, x, -]  -> disable (all protocols)
