@@ -199,6 +199,8 @@ jobs:
         - get: tasmota-release
           trigger: true
           params: { include_source_tarball: true }
+        - get: tasmota-customization
+          trigger: true
         - get: lib
       - task: untar-tasmota-source
         file: lib/tasks/untar.yml
@@ -225,7 +227,7 @@ jobs:
         image: tasmota-builder-image
         config:
           platform: linux
-          inputs: [ name: tasmota-source ]
+          inputs: [ name: tasmota-source, name: tasmota-customization ]
           params:
             PLATFORMIO_CORE_DIR: pio-core
           caches: [ path: pio-core ]
@@ -241,7 +243,7 @@ jobs:
                 echo Now we have "$(pio --version)" with core_dir of size "$(du -hs $PLATFORMIO_CORE_DIR)"
 
                 # Customize the build: the file lists all features and sensors as we'd like them to be set e.g. USE_PROMETHEUS.
-                cp /user_config_override.h tasmota-source/tasmota/user_config_override.h
+                cp tasmota-customization/user_config_override.h tasmota-source/tasmota/user_config_override.h
 
                 pio run --environment tasmota32 --project-dir tasmota-source/tasmota
 
@@ -290,6 +292,13 @@ resources:
       <<: *github
       uri: git@github.com:uhlig-it/tasmota-builder.git
       paths: [ images/tasmota-builder/* ]
+  - name: tasmota-customization
+    type: git
+    icon: github
+    source:
+      <<: *github
+      uri: git@github.com:uhlig-it/tasmota-builder.git
+      paths: [ user_config_override.h ]
   - name: platformio-release
     type: github-release
     icon: package
