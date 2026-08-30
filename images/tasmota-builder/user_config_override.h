@@ -391,7 +391,7 @@
 // USE_LIGHT               [x, x / x, x, x, x, x]  -> keep (ESP8266 default)
 //   Light control
 #ifndef USE_LIGHT
-#define USE_LIGHT
+#undef USE_LIGHT
 #endif
 
 // USE_WS2812              [-, x / x, x, x, -, x]  -> disable: the Nous A8T has
