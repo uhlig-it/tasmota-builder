@@ -203,6 +203,7 @@ resources:
       owner: arendst
       repository: Tasmota
       pre_releases: false
+      tag_filter: "v(.+)"
   - name: tasmota-builder-image
     type: registry-image
     icon: docker
