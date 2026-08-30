@@ -1,3 +1,8 @@
+groups:
+  - name: firmware
+    jobs: [build-tasmota, build-tasmota32-nousa8t]
+  - name: tooling
+    jobs: [build-tasmota-builder, build-jo]
 jobs:
   - name: build-tasmota-builder
     plan:
@@ -69,7 +74,7 @@ jobs:
           image: image/image.tar
           version: ((.:jo-version))
           bump_aliases: true
-  - name: build-release
+  - name: build-tasmota
     plan:
       - in_parallel:
         - get: tasmota-release
@@ -81,6 +86,21 @@ jobs:
         input_mapping: { release: tasmota-release }
         output_mapping: { extracted: tasmota-source }
         params: { tarball: source.tar.gz }
+      # The tarball's top-level directory name is not stable (GitHub derives it
+      # from owner, repo, tag or commit sha), so pin it to a known name.
+      - get: alpine-image
+      - task: canonicalize-tasmota-source
+        image: alpine-image
+        config:
+          platform: linux
+          inputs: [ name: tasmota-source ]
+          outputs: [ name: tasmota-source ]
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                mv tasmota-source/* tasmota-source/tasmota
       - get: tasmota-builder-image
 # TODO Build across a map of name => []buildFlag, e.g.
 # {
@@ -108,8 +128,8 @@ jobs:
 
                     PLATFORMIO_CORE_DIR=$(readlink -f "$PLATFORMIO_CORE_DIR")
                     echo Now we have "$(pio --version)" with core_dir of size "$(du -hs $PLATFORMIO_CORE_DIR)"
-                    pio run --environment tasmota --project-dir tasmota-source/arendst-Tasmota-*/
-                    cp tasmota-source/arendst-Tasmota-*/.pio/build/tasmota/firmware.bin firmware-minimal
+                    pio run --environment tasmota --project-dir tasmota-source/tasmota
+                    cp tasmota-source/tasmota/.pio/build/tasmota/firmware.bin firmware-minimal
                     gzip -9 firmware-minimal/firmware.bin
           - put: firmware-minimal
             params:
@@ -135,8 +155,8 @@ jobs:
 
                     PLATFORMIO_CORE_DIR=$(readlink -f "$PLATFORMIO_CORE_DIR")
                     echo Now we have "$(pio --version)" with core_dir of size "$(du -hs $PLATFORMIO_CORE_DIR)"
-                    pio run --environment tasmota --project-dir tasmota-source/arendst-Tasmota-*/
-                    cp tasmota-source/arendst-Tasmota-*/.pio/build/tasmota/firmware.bin firmware
+                    pio run --environment tasmota --project-dir tasmota-source/tasmota
+                    cp tasmota-source/tasmota/.pio/build/tasmota/firmware.bin firmware
                     gzip -9 firmware/firmware.bin
           - put: firmware
             params:
@@ -170,6 +190,87 @@ jobs:
                   message="The new Tasmota firmware build $(cat tasmota-builder-release/tag) is available." \
                   "actions[]=$(jo action=view label=Pipeline url='$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME')" \
                   "actions[]=$(jo action=view label=Release url=$(cat tasmota-builder-release/url))" \
+                | tee release-notification/message.json
+      - put: ntfy
+        params: { file: release-notification/message.json }
+  - name: build-tasmota32-nousa8t
+    plan:
+      - in_parallel:
+        - get: tasmota-release
+          trigger: true
+          params: { include_source_tarball: true }
+        - get: lib
+      - task: untar-tasmota-source
+        file: lib/tasks/untar.yml
+        input_mapping: { release: tasmota-release }
+        output_mapping: { extracted: tasmota-source }
+        params: { tarball: source.tar.gz }
+      # The tarball's top-level directory name is not stable (GitHub derives it
+      # from owner, repo, tag or commit sha), so pin it to a known name.
+      - get: alpine-image
+      - task: canonicalize-tasmota-source
+        image: alpine-image
+        config:
+          platform: linux
+          inputs: [ name: tasmota-source ]
+          outputs: [ name: tasmota-source ]
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                mv tasmota-source/* tasmota-source/tasmota
+      - get: tasmota-builder-image
+      - task: build-nousa8t
+        image: tasmota-builder-image
+        config:
+          platform: linux
+          inputs: [ name: tasmota-source ]
+          params:
+            PLATFORMIO_CORE_DIR: pio-core
+          caches: [ path: pio-core ]
+          outputs: [ name: firmware-nousa8t ]
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                set -e
+
+                PLATFORMIO_CORE_DIR=$(readlink -f "$PLATFORMIO_CORE_DIR")
+                echo Now we have "$(pio --version)" with core_dir of size "$(du -hs $PLATFORMIO_CORE_DIR)"
+
+                # Customize the build: the file lists all features and sensors as we'd like them to be set e.g. USE_PROMETHEUS.
+                cp /user_config_override.h tasmota-source/tasmota/user_config_override.h
+
+                pio run --environment tasmota32 --project-dir tasmota-source/tasmota
+
+                cp tasmota-source/tasmota/.pio/build/tasmota32/firmware.bin firmware-nousa8t
+                gzip -9 firmware-nousa8t/firmware.bin
+      - put: firmware-nousa8t
+        params:
+          file: firmware-nousa8t/firmware.bin.gz
+          acl: public-read # https://stackoverflow.com/a/74522101/1044029 and https://github.com/concourse/s3-resource?tab=readme-ov-file#plan
+      - get: jo-image
+      - task: prepare-notification
+        image: jo-image
+        config:
+          platform: linux
+          inputs: [ name: tasmota-release ]
+          outputs: [ name: release-notification ]
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                set -e
+
+                jo \
+                  topic=suhlig \
+                  title="Tasmota Builder" \
+                  "message=The new Nous A8T firmware build $(cat tasmota-release/tag) is available." \
+                  "actions[]=$(jo action=view label=Pipeline url='$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME')" \
+                  "actions[]=$(jo action=view label='Tasmota release' url=$(cat tasmota-release/url))" \
                 | tee release-notification/message.json
       - put: ntfy
         params: { file: release-notification/message.json }
@@ -245,6 +346,11 @@ resources:
     source:
       <<: *s3
       versioned_file: tasmota-minimal.bin.gz
+  - name: firmware-nousa8t
+    type: s3
+    source:
+      <<: *s3
+      versioned_file: tasmota32-nousa8t.bin.gz
   - name: tasmota-builder-release
     type: github-release
     icon: github-circle
