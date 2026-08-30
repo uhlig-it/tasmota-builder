@@ -104,6 +104,8 @@ jobs:
                 args:
                   - -c
                   - |
+                    set -e
+
                     PLATFORMIO_CORE_DIR=$(readlink -f "$PLATFORMIO_CORE_DIR")
                     echo Now we have "$(pio --version)" with core_dir of size "$(du -hs $PLATFORMIO_CORE_DIR)"
                     pio run --environment tasmota --project-dir tasmota-source/arendst-Tasmota-*/
@@ -129,6 +131,8 @@ jobs:
                 args:
                   - -c
                   - |
+                    set -e
+
                     PLATFORMIO_CORE_DIR=$(readlink -f "$PLATFORMIO_CORE_DIR")
                     echo Now we have "$(pio --version)" with core_dir of size "$(du -hs $PLATFORMIO_CORE_DIR)"
                     pio run --environment tasmota --project-dir tasmota-source/arendst-Tasmota-*/
@@ -158,6 +162,8 @@ jobs:
             args:
               - -c
               - |
+                set -e
+
                 jo \
                   topic=suhlig \
                   title="Tasmota Builder" \
