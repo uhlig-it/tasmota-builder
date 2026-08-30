@@ -236,10 +236,10 @@ resources:
     type: s3
     source: &s3
       bucket: uhlig-it-tasmota-builds
-      versioned_file: tasmota.bin.gz
       access_key_id: ((secrets.b2.keyID))
       secret_access_key: ((secrets.b2.applicationKey))
       endpoint: s3.us-west-001.backblazeb2.com
+      versioned_file: tasmota.bin.gz
   - name: firmware-minimal
     type: s3
     source:
